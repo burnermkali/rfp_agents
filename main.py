@@ -130,6 +130,13 @@ start_time =time.time()
 results = crew.kickoff()
 print(f"Generated email response: {results}")
 
+# Save the response to a file in the data folder
+output_file_path = 'output/generated_email_response.txt'
+with open(output_file_path, 'w') as file:
+    file.write(results)
+
+print(f"Response saved to {output_file_path}")
+
 end_time = time.time()
 elapsed_time = end_time - start_time
 

@@ -5,6 +5,8 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import re
 import PyPDF2
+import pytesseract
+from PIL import Image  # Add this import for image handling
 
 
 load_dotenv()
@@ -20,7 +22,7 @@ class RFPAgent:
     def extract_rfp_info_agent(self):
         return Agent(
             role="RFP Information Extractor",
-            goal="""I want you to extract critical information such as title, company name, email, requirements, and project scope from uploaded RFP files (PDF or TXT).""",
+            goal="""I want you to extract critical information such as title, company name, email, requirements, and project scope from uploaded RFP files (PDF, TXT, PNG, or JPEG).""",
             backstory="""As an RFP Information Extractor, you are responsible for identifying and extracting key details from RFP documents to assist in personalized responses.""",
             verbose=True,
             llm=self.llm,
@@ -32,6 +34,8 @@ class RFPAgent:
             return self._extract_from_pdf(file_path)
         elif file_path.endswith('.txt'):
             return self._extract_from_txt(file_path)
+        elif file_path.endswith(('.png', '.jpeg', '.jpg')):  # Check for image files
+            return self._extract_from_image(file_path)
         else:
             raise ValueError("Unsupported file type")
 
@@ -46,6 +50,11 @@ class RFPAgent:
     def _extract_from_txt(self, file_path):
         with open(file_path, 'r') as file:
             rfp_text = file.read()
+        return self._extract_info(rfp_text)
+
+    def _extract_from_image(self, file_path):
+        # Use Pytesseract to extract text from the image
+        rfp_text = pytesseract.image_to_string(Image.open(file_path))
         return self._extract_info(rfp_text)
 
     def _extract_info(self, rfp_text):
